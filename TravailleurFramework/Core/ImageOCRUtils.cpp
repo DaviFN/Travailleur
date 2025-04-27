@@ -22,8 +22,7 @@ void ImageOCRUtils::addTesseractEngines(const size_t numberOfEnginesToAdd)
 		tesseractEngineDatas.push_back(tesseractEngineData);
 
 		tesseractEngineData->tesseractEngine = std::make_unique<tesseract::TessBaseAPI>();
-		const std::string tesseractDataPath = "C:\\devtools\\tessdata";
-		const int engineInitializationResult = tesseractEngineData->tesseractEngine->Init(tesseractDataPath.c_str(), "eng");
+		const int engineInitializationResult = tesseractEngineData->tesseractEngine->Init(nullptr, "eng");
 		assert(engineInitializationResult == 0);
 	}
 }
