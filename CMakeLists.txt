@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.24)
 
+#set(CMAKE_FIND_DEBUG_MODE ON) << can be used to find out where libraries are located
+
 SET(CMAKE_CONFIGURATION_TYPES ${CMAKE_BUILD_TYPE} CACHE STRING "" FORCE)
 project(travailleur)
 

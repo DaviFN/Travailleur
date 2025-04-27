@@ -272,10 +272,8 @@ void CaptureHandler::update()
 {
     if (shouldGrabDesktop()) {
         grabDesktopFrame();
-        return;
     }
-
-    if (isConnectedToDevice()) {
+    else if (isConnectedToDevice()) {
         videoCapture.read(*frame->getMat());
         cv::cvtColor(*frame->getMat(), *frame->getMat(), cv::COLOR_BGR2BGRA);
     }
