@@ -3,12 +3,6 @@
 void OpenCVUtils::grabDesktopFrame(Image& output)
 {
     output.setMat(grabDesktopMat());
-
-    bool shiftPressed = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-
-    if (shiftPressed) {
-        output.saveAsPng("C:\\Users\\davif\\dev\\travailleur\\output.png");
-    }
 }
 
 cv::Mat OpenCVUtils::grabDesktopMat()

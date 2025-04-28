@@ -317,8 +317,12 @@ void CaptureHandler::startVideoRecording(const std::string& filepath)
 {
     const std::string filename = videoRecordingFilename->getValue();
     if (filename != "") {
-        if (!videoWriter.isOpened() && !FilesystemUtils::fileExists(filepath)) {
-            constexpr double fps = 30.0;
+        constexpr double fps = 30.0;
+        if (shouldGrabDesktop()) {
+            const cv::Size frameSize(static_cast<int>(frame->getWidth()), static_cast<int>(frame->getHeight()));
+            videoWriter.open(filepath, cv::VideoWriter::fourcc('h', '2', '6', '5'), fps, frameSize, true);
+        }
+        else if (!videoWriter.isOpened() && !FilesystemUtils::fileExists(filepath)) {
             const double width = videoCapture.get(cv::CAP_PROP_FRAME_WIDTH);
             const double height = videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT);
             const cv::Size frameSize(static_cast<int>(width), static_cast<int>(height));
