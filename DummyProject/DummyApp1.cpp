@@ -9,56 +9,14 @@ std::string DummyApp1::getName() const
 
 void DummyApp1::setup()
 {
-    registerRectangularRegion("rectangularRegion1");
-    registerRectangularRegion("rectangularRegion2");
-    registerRectangularRegion("rectangularRegion3");
-    registerRectangularRegion("rectangularRegion4");
-    registerRectangularRegion("rectangularRegion5");
-    registerRectangularRegion("rectangularRegion6");
-    registerRectangularRegion("rectangularRegion7");
-    registerRectangularRegion("rectangularRegion8");
-    registerRectangularRegion("rectangularRegion9");
-
-    registerImagePattern("imagePattern1");
-    registerImagePattern("imagePattern2");
-    registerImagePattern("imagePattern3");
-    registerImagePattern("imagePattern4");
-    registerImagePattern("imagePattern5");
-    registerImagePattern("imagePattern6");
-    registerImagePattern("imagePattern7");
-    registerImagePattern("imagePattern8");
-    registerImagePattern("imagePattern9");
-
-    registerImagePreprocessing("imagePreprocessing1");
-    registerImagePreprocessing("imagePreprocessing2");
-    registerImagePreprocessing("imagePreprocessing3");
-    registerImagePreprocessing("imagePreprocessing4");
-    registerImagePreprocessing("imagePreprocessing5");
-    registerImagePreprocessing("imagePreprocessing6");
-    registerImagePreprocessing("imagePreprocessing7");
-    registerImagePreprocessing("imagePreprocessing8");
-    registerImagePreprocessing("imagePreprocessing9");
-
-    registerImageOCR("imageOCR1");
-    registerImageOCR("imageOCR2");
-    registerImageOCR("imageOCR3");
-    registerImageOCR("imageOCR4");
-    registerImageOCR("imageOCR5");
-    registerImageOCR("imageOCR6");
-    registerImageOCR("imageOCR7");
-    registerImageOCR("imageOCR8");
-    registerImageOCR("imageOCR9");
-
-    registerImageResource("imageResource1");
-    registerImageResource("imageResource2");
-    registerImageResource("imageResource3");
-    registerImageResource("imageResource4");
-    registerImageResource("imageResource5");
-    registerImageResource("imageResource6");
-    registerImageResource("imageResource7");
-    registerImageResource("imageResource8");
-    registerImageResource("imageResource9");
-
+    for (uint8_t i = 1; i <= 9; ++i) {
+        registerRectangularRegion("rectangularRegion" + std::to_string(i));
+        registerImagePattern("imagePattern" + std::to_string(i));
+        registerImagePreprocessing("imagePreprocessing" + std::to_string(i));
+        registerImageOCR("imageOCR" + std::to_string(i));
+        registerImageResource("imageResource" + std::to_string(i));
+        registerPointInput("pointerInput" + std::to_string(i));
+    }
     addAppFramesDisableOption("DummyApp1 dummy frame");
 }
 
