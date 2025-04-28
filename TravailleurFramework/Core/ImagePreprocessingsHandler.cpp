@@ -194,11 +194,17 @@ Rectangle2D<int> ImagePreprocessingsHandler::determinePreprocessingTestRegion(Im
 void ImagePreprocessingsHandler::testPreprocessing(Image* frame)
 {
 	const Rectangle2D<int> region = determinePreprocessingTestRegion(frame);
+	if (!region.isValid()) {
+		timeTakenByTestInMs = "";
+		return;
+	}
+	
 	ImagePreprocessing* selectedImagePreprocessing = getSelectedImagePreprocessing();
 	if (selectedImagePreprocessing == nullptr) {
 		timeTakenByTestInMs = "";
 		return;
 	}
+
 	delete originalTestImage;
 	originalTestImage = new Image(*frame);
 	const bool wasAbleToCrop = originalTestImage->crop(region);
