@@ -1,11 +1,8 @@
-cmake_minimum_required(VERSION 3.24)
-
 FILE(GLOB SOURCES
     Core/*.cpp
     Common/*.cpp
     ImGuiWrappers/*.cpp
     3rdparty/escapi/escapi.cpp
-    OpenCVUtils/*.cpp
 )
 
 message(STATUS "SOURCES: ${SOURCES}")
@@ -16,7 +13,14 @@ message(STATUS "SOURCES: ${SOURCES}")
 #    Core/src/TravailleurContext.cpp
 #)
 
-add_library(TravailleurFramework ${SOURCES})
+add_library(TravailleurFramework STATIC ${SOURCES})
+
+if(UNIX AND NOT APPLE)
+    find_package(X11 REQUIRED)
+    find_library(XTST_LIB Xtst REQUIRED)
+    target_link_libraries(TravailleurFramework PUBLIC ${X11_LIBRARIES} ${XTST_LIB})
+    target_include_directories(TravailleurFramework PUBLIC ${X11_INCLUDE_DIR})
+endif()
 
 #include_directories(
 #    TravailleurFramework
@@ -98,19 +102,19 @@ target_include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     ${OpenCV_INCLUDE_DIRS}
     ${Tesseract_INCLUDE_DIRS}
+	${CMAKE_SOURCE_DIR}/3rdparty/screen_capture_lite/include
 )
 
 target_link_libraries(
     TravailleurFramework
     PUBLIC
-    escapi
-    imgui
+	imgui::imgui
+	screen_capture_lite_shared
     gl3w
-    ${SDL2_LIBRARIES}
+    ${SDL3_LIBRARIES}
     EasyBMP
     md5
     ${OpenCV_LIBS}
-    #${Tesseract_LIBS}
     PRIVATE
     Tesseract::libtesseract
 )
@@ -154,13 +158,6 @@ target_link_libraries(
 #)
 
 install(TARGETS TravailleurFramework DESTINATION "${INSTALLATION_DIRECTORY}")
-
-add_custom_command(
-    TARGET TravailleurFramework POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        "${SDL2_DIR_PATH}/lib/x64/SDL2.dll"
-        ${INSTALLATION_DIRECTORY}
-)
 
 #add_custom_command(
 #    TARGET TravailleurFramework POST_BUILD

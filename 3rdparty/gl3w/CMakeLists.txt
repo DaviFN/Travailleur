@@ -4,7 +4,7 @@ set(SOURCES
     gl3w.c
 )
 
-add_library(gl3w ${SOURCES})
+add_library(gl3w STATIC ${SOURCES})
 
 target_include_directories(
     gl3w

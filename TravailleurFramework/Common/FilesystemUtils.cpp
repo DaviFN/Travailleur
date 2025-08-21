@@ -1,58 +1,51 @@
 #include "FilesystemUtils.h"
-
 #include <filesystem>
+#include <vector>
+#include <string>
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
+
+#ifdef _WIN32
+    #define NOMINMAX
+    #include <windows.h>
+    #include <shellapi.h>
+#else
+    #include <sys/stat.h>
+    #include <unistd.h>
+#endif
 
 namespace FilesystemUtils {
 
     void globFiles(std::vector<std::string>& files, const std::string& searchDir, const std::string& extension, bool recursively)
     {
-        WIN32_FIND_DATA fd;
-        const HANDLE hFind = FindFirstFile((searchDir + "\\*").c_str(), &fd);
-        if (hFind != INVALID_HANDLE_VALUE) {
-            do {
-                if (!(fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
-                    if (extension == "") {
-                        files.push_back(searchDir + "\\" + fd.cFileName);
-                    }
-                    else {
-                        const size_t filePathSize = strlen(fd.cFileName);
-                        if (filePathSize >= extension.size() + 1) {
-                            bool fileEndsWithExtension = true;
-                            if (fd.cFileName[filePathSize - extension.size() - 1] != '.') {
-                                fileEndsWithExtension = false;
-                            }
-                            else for (size_t i = 0; i < extension.size(); ++i) {
-                                char lowercaseFilepathCharacter = fd.cFileName[filePathSize - extension.size() + i];
-                                lowercaseFilepathCharacter = lowercaseFilepathCharacter >= 'A' && lowercaseFilepathCharacter <= 'Z' ? lowercaseFilepathCharacter + ('a' - 'A') : lowercaseFilepathCharacter;
-                                const char lowercaseExtensionCharacter = extension[i] >= 'A' && extension[i] <= 'Z' ? extension[i] + ('a' - 'A') : extension[i];
-                                if (lowercaseFilepathCharacter != lowercaseExtensionCharacter) {
-                                    fileEndsWithExtension = false;
-                                    break;
-                                }
-                            }
-                            if (fileEndsWithExtension) {
-                                files.push_back(searchDir + "\\" + fd.cFileName);
-                            }
-                        }
+        namespace fs = std::filesystem;
+        fs::directory_options options = fs::directory_options::skip_permission_denied;
+        if (recursively) {
+            for (auto& entry : fs::recursive_directory_iterator(searchDir, options)) {
+                if (entry.is_regular_file()) {
+                    if (extension.empty() || filepathHasExtension(entry.path().string(), extension)) {
+                        files.push_back(entry.path().string());
                     }
                 }
-                else if (recursively && strcmp(fd.cFileName, ".") != 0 && strcmp(fd.cFileName, "..") != 0) {
-                    globFiles(files, searchDir + "\\" + fd.cFileName, extension, true);
+            }
+        } else {
+            for (auto& entry : fs::directory_iterator(searchDir, options)) {
+                if (entry.is_regular_file()) {
+                    if (extension.empty() || filepathHasExtension(entry.path().string(), extension)) {
+                        files.push_back(entry.path().string());
+                    }
                 }
-            } while (FindNextFile(hFind, &fd));
-            FindClose(hFind);
+            }
         }
     }
 
     size_t sizeOfFileInBytes(const std::string& filepath)
     {
-        WIN32_FIND_DATA fd;
-        HANDLE h = FindFirstFileA(filepath.c_str(), &fd);
-        if (h == INVALID_HANDLE_VALUE) return 0;
-
-        FindClose(h);
-
-        return fd.nFileSizeLow | (__int64)fd.nFileSizeHigh << 32;
+        namespace fs = std::filesystem;
+        std::error_code ec;
+        auto size = fs::file_size(filepath, ec);
+        return ec ? 0 : static_cast<size_t>(size);
     }
 
     size_t sizeOfFilesInBytes(const std::vector<std::string>& filepaths)
@@ -66,9 +59,8 @@ namespace FilesystemUtils {
 
     void createDirectory(const std::string& dirPath)
     {
-        CreateDirectoryA(dirPath.c_str(), NULL);
+        std::filesystem::create_directory(dirPath);
     }
-
 
     bool directoryExists(const std::string& dirPath)
     {
@@ -77,14 +69,12 @@ namespace FilesystemUtils {
 
     bool fileExists(const std::string& filepath)
     {
-        const DWORD dwAttrib = GetFileAttributesA((LPCTSTR)filepath.c_str());
-
-        return (dwAttrib != INVALID_FILE_ATTRIBUTES && !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+        return std::filesystem::is_regular_file(filepath);
     }
 
     bool deleteFile(const std::string& filepath)
     {
-        return DeleteFileA(filepath.c_str()) == TRUE;
+        return std::filesystem::remove(filepath);
     }
 
     bool deleteFolder(const std::string& folderpath)
@@ -98,10 +88,15 @@ namespace FilesystemUtils {
     }
 
     void openDirectoryInExplorer(const std::string& dirPath) {
+    #ifdef _WIN32
         ShellExecuteA(NULL, "open", dirPath.c_str(), NULL, NULL, SW_SHOWDEFAULT);
+    #else
+        std::string command = "xdg-open \"" + dirPath + "\"";
+        std::system(command.c_str());
+    #endif
     }
 
-    inline std::string padStringWithZerosOnTheLeft(const std::string& string, const size_t nZeros)
+    std::string padStringWithZerosOnTheLeft(const std::string& string, const size_t nZeros)
     {
         return std::string(nZeros - std::min(nZeros, string.length()), '0') + string;
     }
@@ -109,11 +104,16 @@ namespace FilesystemUtils {
     std::string getNextNumberFilenameBasedOnExistingFiles(const std::string& dirPath, const std::string& extension, const size_t nOfPaddingZeros)
     {
         std::vector<std::string> filesInDir;
-        globFiles(filesInDir, dirPath, "png", false);
+        globFiles(filesInDir, dirPath, extension, false);
         size_t number = 1;
         while (true) {
             const std::string numberString = padStringWithZerosOnTheLeft(std::to_string(number), nOfPaddingZeros);
-            const std::string filepath = dirPath + "\\" + numberString + "." + extension;
+            const std::string filepath =
+    #ifdef _WIN32
+                dirPath + "\\" + numberString + "." + extension;
+    #else
+                dirPath + "/" + numberString + "." + extension;
+    #endif
             if (!fileExists(filepath)) return numberString;
             ++number;
         }
@@ -127,7 +127,7 @@ namespace FilesystemUtils {
         const float nGiB = (double)nMiB / 1024.0;
         const float nTiB = (double)nGiB / 1024.0;
         char buffer[4096];
-        sprintf(buffer, "nBytes: %zu - nKiB: %.3f - nMiB: %.3f - nGiB: %.3f - nTiB: %.3f", (int)nBytes, nKiB, nMiB, nGiB, nTiB);
+        sprintf(buffer, "nBytes: %zu - nKiB: %.3f - nMiB: %.3f - nGiB: %.3f - nTiB: %.3f", nBytes, nKiB, nMiB, nGiB, nTiB);
         output = buffer;
     }
 
@@ -135,7 +135,6 @@ namespace FilesystemUtils {
     {
         int str_len = strlen(str);
         int suffix_len = strlen(suffix);
-
         return (str_len >= suffix_len) && (0 == strcmp(str + (str_len - suffix_len), suffix));
     }
 
@@ -178,18 +177,27 @@ namespace FilesystemUtils {
 
     std::string getValueOfEnvironmentVariable(const std::string& environmentVariable)
     {
-        const char* value = std::getenv("userprofile");
+        const char* value = std::getenv(environmentVariable.c_str());
         return value != nullptr ? value : "";
     }
 
     std::string getUserDirectory()
     {
-        return getValueOfEnvironmentVariable("userprofile");
-    };
+    #ifdef _WIN32
+        return getValueOfEnvironmentVariable("USERPROFILE");
+    #else
+        return getValueOfEnvironmentVariable("HOME");
+    #endif
+    }
 
     std::string parentDirectoryOfFilepath(const std::string& filepath)
     {
-        const size_t lastDelimiterIndex = filepath.find_last_of("\\");
+    #ifdef _WIN32
+        const char delimiter = '\\';
+    #else
+        const char delimiter = '/';
+    #endif
+        const size_t lastDelimiterIndex = filepath.find_last_of(delimiter);
         if (lastDelimiterIndex == std::string::npos) {
             return "";
         }
@@ -198,7 +206,12 @@ namespace FilesystemUtils {
 
     std::string filenameFromFilepath(const std::string& filepath)
     {
-        const size_t lastDelimiterIndex = filepath.find_last_of("\\");
+    #ifdef _WIN32
+        const char delimiter = '\\';
+    #else
+        const char delimiter = '/';
+    #endif
+        const size_t lastDelimiterIndex = filepath.find_last_of(delimiter);
         if (lastDelimiterIndex == std::string::npos) {
             return filepath;
         }

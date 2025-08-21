@@ -103,7 +103,7 @@ Travailleur is a C++ automation framework that combines computer vision techniqu
 
 1. **Assure Required Software Are Installed**  
    *Make sure you have installed the following software components on your machine:*
-   - Visual Studio
+   - Visual Studio (on Windows)
    - Python
    - CMake
    - Make
@@ -119,32 +119,52 @@ Travailleur is a C++ automation framework that combines computer vision techniqu
       ```bash
       bootstrap-vcpkg.bat
       ```
+
+      If on Linux:
+      ```bash
+      ./bootstrap-vcpkg.sh
+      ```
    4. Integrate vcpkg with Visual Studio (optional, but recommended):
       ```bash
       vcpkg integrate install
       ```
    5. Add a VCPKG_ROOT environment variable pointing to the vcpkg directory (if the suggestion was followed, it should be "C:\devtools\vcpkg")
+   
+      If on Linux:
+      ```bash
+      echo 'export VCPKG_ROOT=$HOME/vcpkg' >> ~/.bashrc
+      echo 'export PATH="$VCPKG_ROOT:$PATH"' >> ~/.bashrc
+      source ~/.bashrc
+      ```
    6. Add an entry to the path environment variable pointing to that same directory to make vcpkg's executable accessible through the command line (restart command line so that this change takes place)   
    > *At this point, vcpkg is installed; now, install the dependencies:*
-   7. Install the OpenCV package provided by vcpkg (this might take a while): 
+   7. Install the required packages for the build, which are provided by vcpkg (this might take a while): 
       ```bash
-      vcpkg install opencv:x64-windows
+      vcpkg install opencv:x64-windows tesseract:x64-windows gtest:x64-windows sdl3:x64-windows imgui[sdl3-binding,opengl3-binding]:x64-windows
       ```
-   8. Install the Tesseract package provided by vcpkg (this might take a while): 
+
+      If on Linux:
       ```bash
-      vcpkg install tesseract:x64-windows
-      ```
-   9. Install the GTest package provided by vcpkg (this one doesn't take as long): 
-      ```bash
-      vcpkg install gtest:x64-windows
+      vcpkg install opencv:x64-linux tesseract:x64-linux gtest:x64-linux sdl3:x64-linux imgui[sdl3-binding,opengl3-binding]:x64-linux
       ```
 3. **Setup Tesseract Data** 
    *Tesseract works better if you configure it with adequate language data; we will use the language data called "tessdata_best", but there are others available in [this webpage](https://tesseract-ocr.github.io/tessdoc/Data-Files.html)*
-   1. Clone the language data repository somewhere; we suggest "C:\devtools": 
+   1. Clone the language data repository somewhere; we suggest "C:\devtools", or the home folder on Linux: 
       ```bash
       cd C:\devtools && git clone https://github.com/tesseract-ocr/tessdata_best
       ```
-   2. Add a TESSDATA_PREFIX environment variable pointing to that exact directory
+
+      If on Linux:
+      ```bash
+      cd ~ && git clone https://github.com/tesseract-ocr/tessdata_best
+      ```
+   2. Add a TESSDATA_PREFIX environment variable pointing to that exact directory (e.g. "C:\devtools\tessdata_best")
+   
+   If on Linux:
+   ```bash
+   echo 'export TESSDATA_PREFIX="$HOME/tessdata_best"' >> ~/.bashrc
+   source ~/.bashrc
+   ```
 4. **Clone and Build Travailleur** 
    *At this point, we have everything we need to clone and build Travailleur*
    1. Clone Travailleur's repository somewhere and cd onto it:
@@ -153,15 +173,16 @@ Travailleur is a C++ automation framework that combines computer vision techniqu
       ```
    2. Generate the Visual Studio solution by issuing the following command:
       ```bash
-      make rel
+      make
       ```
    3. Open the solution with the following command:
       ```bash
-      make openrel
+      make open
       ```
    4. Open the solution explorer window, if not open already (CTRL + ALT + L hotkey)
    5. Right-click the "INSTALL" project and select "build"; wait until the build process completes
-
+   
+> If on Linux, issue "make" on the build folder (buildfiles/debug or buildfiles/relwithdebinfo)
 5. **Run the Framework**   
    *Once the solution is built, you can build an app and run it. If you don't have your own yet, you can use the provided DummyProject:*
    1. Set the example project named DummyProject to be the startup one by right-clicking it and selecting "set as startup project"
@@ -175,8 +196,7 @@ Travailleur is a C++ automation framework that combines computer vision techniqu
 - [ ] Improve the user interface experience, which is very cumbersome at the moment
 - [ ] Reimplement the image pattern detection algorithm leveraging the GPU by using compute shaders, which will drastically improve its performance
 - [ ] Make coordinate inputs more flexible; currently they can only be absolute
-- [ ] Make the framework cross-platform; though Travailleur is currently Windows-specific, most of its code is platform-agnostic, so this should not be so hard to do
-- [ ] Reimplement the persistence system using something modern; the current custom implementation, though handy, is crap
+- [X] Make the framework cross-platform; though Travailleur is currently Windows-specific, most of its code is platform-agnostic, so this should not be so hard to do
 
 ---
 

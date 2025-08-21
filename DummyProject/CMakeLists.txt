@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.24)
-
 FILE(GLOB SOURCES *.cpp)
 
 message(STATUS "SOURCES: ${SOURCES}")

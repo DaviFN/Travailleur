@@ -1,0 +1,2 @@
+Fixed Example Code Extract to RGB code
+Added functions to check if application has permission to capture the screen, Request permission, and can request permission

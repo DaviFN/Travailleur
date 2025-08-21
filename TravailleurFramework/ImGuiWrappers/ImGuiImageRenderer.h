@@ -1,7 +1,10 @@
 #ifndef ImGuiImageRenderer_H
 #define ImGuiImageRenderer_H
 
-#include "Common\Image.h"
+#include "Common/Image.h"
+#ifdef _WIN32
+#define NOMINMAX
+#endif
 #include "gl3w.h"
 
 class ImGuiImageRenderer

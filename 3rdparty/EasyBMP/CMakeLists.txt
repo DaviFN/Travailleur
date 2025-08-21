@@ -4,7 +4,7 @@ set(SOURCES
     src/EasyBMP.cpp
 )
 
-add_library(EasyBMP ${SOURCES})
+add_library(EasyBMP STATIC ${SOURCES})
 
 target_include_directories(
     EasyBMP

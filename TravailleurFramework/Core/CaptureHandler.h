@@ -11,6 +11,7 @@
 #include "Common/Image.h"
 #include "Common/Rectangle2D.h"
 #include "Common/SimpleTimer.h"
+#include "Core/DesktopFrameGrabber.h"
 #include "ImGuiWrappers/ImGuiCombo.h"
 #include "ImGuiWrappers/ImGuiCheckbox.h"
 #include "ImGuiWrappers/ImGuiIntSlider.h"
@@ -38,9 +39,6 @@ public:
     void update();
 
     Image* getFrameOverlays() const;
-
-protected:
-    static bool escapiInitialized;
 
 private:
     class VideoMetadata {
@@ -77,6 +75,7 @@ private:
     void clearFrameOverlays();
     void setFrameToBlackFrame();
     void setFrameToDefaultFrame();
+    static size_t countCaptureDevices();
     void updateAvailableDevices();
     bool isConnectedToDevice() const;
     void connectToDevice();
@@ -124,6 +123,7 @@ private:
     cv::VideoCapture videoCapture;
     cv::VideoCapture videoFilePlayer;
     cv::VideoWriter videoWriter;
+    std::unique_ptr<DesktopFrameGrabber> desktopFrameGrabber;
     ImGuiCombo availableDevicesCombo;
     Image* frame = nullptr;
     ImGuiImageRenderer* imGuiImageRenderer = nullptr;

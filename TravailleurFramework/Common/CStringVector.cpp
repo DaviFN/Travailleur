@@ -1,5 +1,6 @@
 #include "CStringVector.h"
 
+#include <cstring>
 #include <string>
 #include <vector>
 

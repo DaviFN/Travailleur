@@ -4,7 +4,7 @@ set(SOURCES
     src/md5.cpp
 )
 
-add_library(md5 ${SOURCES})
+add_library(md5 STATIC ${SOURCES})
 
 target_include_directories(
     md5

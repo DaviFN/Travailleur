@@ -1,58 +1,97 @@
-CXX = "g++"
+# Detect OS
+ifeq ($(OS),Windows_NT)
+    IS_WINDOWS := 1
+else
+    IS_WINDOWS := 0
+endif
 
-CC = "gcc"
+# Compiler
+CXX = g++
+CC = gcc
 
-.PHONY: clean run gen
+# File extensions and commands
+ifeq ($(IS_WINDOWS),1)
+    EXE_EXT = .exe
+    RM = del /Q
+    RMDIR = rmdir /S /Q
+define MKDIR
+    if not exist "$(subst /,\\,$1)" mkdir "$(subst /,\\,$1)"
+endef
+    PATHSEP = \\
+    PYTHON = python
+    MSG = echo
+    VCPKG_TOOLCHAIN = C:/devtools/vcpkg/scripts/buildsystems/vcpkg.cmake
+    CMAKE_GENERATOR = "Visual Studio 17 2022"
+else
+    EXE_EXT =
+    RM = rm -f
+    RMDIR = rm -rf
+define MKDIR
+    mkdir -p $1
+endef
+    PATHSEP = /
+    PYTHON = python3
+    MSG = echo
+    VCPKG_TOOLCHAIN = $(HOME)/vcpkg/scripts/buildsystems/vcpkg.cmake
+    CMAKE_GENERATOR = "Unix Makefiles"
+endif
 
-RM = del
-
-RMDIR = rd /q /s
-
-MSG = echo
-
-PROGRAM_NAME = travailleur.exe
-
+PROGRAM_NAME = travailleur$(EXE_EXT)
 BINARY_DIR_PATH = bin
-
 BUILDFILES_DIR_PATH = buildfiles
 
-DEBUG_BUILD_PATH = $(BUILDFILES_DIR_PATH)/debug
+DEBUG_BUILD_PATH = $(BUILDFILES_DIR_PATH)$(PATHSEP)debug
+DEBUG_PROGRAM_PATH = $(BINARY_DIR_PATH)$(PATHSEP)debug
+DEBUG_PROGRAM_FILEPATH = $(DEBUG_PROGRAM_PATH)$(PATHSEP)$(PROGRAM_NAME)
 
-RELEASE_SOLUTION_FILEPATH = $(DEBUG_BUILD_PATH)/travailleur.sln
+RELEASE_BUILD_PATH = $(BUILDFILES_DIR_PATH)$(PATHSEP)relwithdebinfo
+RELEASE_PROGRAM_PATH = $(BINARY_DIR_PATH)$(PATHSEP)relwithdebinfo
+RELEASE_PROGRAM_FILEPATH = $(RELEASE_PROGRAM_PATH)$(PATHSEP)$(PROGRAM_NAME)
 
-DEBUG_PROGRAM_PATH = $(BINARY_DIR_PATH)/debug
+SRC = $(wildcard src/*.cpp)
+OBJ = $(SRC:src/%.cpp=$(DEBUG_BUILD_PATH)/%.o)
 
-DEBUG_PROGRAM_FILEPATH = $(DEBUG_PROGRAM_PATH)/$(PROGRAM_NAME)
+CXXFLAGS = -std=c++17 -O2 -Wall
 
-RELEASE_BUILD_PATH = $(BUILDFILES_DIR_PATH)/relwithdebinfo
+.PHONY: clean run gen rel open openrel cmake_gen
 
-RELEASE_SOLUTION_FILEPATH = $(RELEASE_BUILD_PATH)/travailleur.sln
-
-RELEASE_PROGRAM_PATH = $(BINARY_DIR_PATH)/relwithdebinfo
-
-RELEASE_PROGRAM_FILEPATH = $(RELEASE_PROGRAM_PATH)/$(PROGRAM_NAME)
-
+# --- Python-based CMake generation (default) ---
 gen:
-	@python build.py
+	@$(PYTHON) build.py
 
 rel:
-	@python build_release.py
+	@$(PYTHON) build_release.py
 
 open:
-	cd $(DEBUG_BUILD_PATH) && devenv travailleur.sln
+ifeq ($(IS_WINDOWS),1)
+	cd $(DEBUG_BUILD_PATH) && start travailleur.sln
+else
+	@$(MSG) "No Visual Studio on Linux. Open your editor manually."
+endif
 
 openrel:
-	cd $(RELEASE_BUILD_PATH) && devenv travailleur.sln
+ifeq ($(IS_WINDOWS),1)
+	cd $(RELEASE_BUILD_PATH) && start travailleur.sln
+else
+	@$(MSG) "No Visual Studio on Linux. Open your editor manually."
+endif
 
-run:
-	@$(MSG) ATTENTION: BROKEN
-	@python build.py
-	@$(MSG) executing $(PROGRAM_NAME)...
-	@$(PROGRAM_FILEPATH)
-	@$(MSG) $(PROGRAM_NAME) executed
-	
+run: $(DEBUG_PROGRAM_FILEPATH)
+	@$(MSG) "Executing $(PROGRAM_NAME)..."
+ifeq ($(IS_WINDOWS),1)
+	@$(DEBUG_PROGRAM_FILEPATH)
+else
+	@./$(DEBUG_PROGRAM_FILEPATH)
+endif
+	@$(MSG) "$(PROGRAM_NAME) executed"
+
 clean:
-	@$(MSG) cleaning...
+	@$(MSG) "Cleaning..."
+ifeq ($(IS_WINDOWS),1)
 	@if exist $(BINARY_DIR_PATH) $(RMDIR) $(BINARY_DIR_PATH)
 	@if exist $(BUILDFILES_DIR_PATH) $(RMDIR) $(BUILDFILES_DIR_PATH)
-	@$(MSG) cleaned
+else
+	@$(RMDIR) $(BINARY_DIR_PATH)
+	@$(RMDIR) $(BUILDFILES_DIR_PATH)
+endif
+	@$(MSG) "Cleaned."

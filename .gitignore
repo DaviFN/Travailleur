@@ -1,3 +1,5 @@
 .vscode
+.vs
 buildfiles
 bin
+__pycache__

@@ -5,6 +5,7 @@
 #include <mutex>
 #include <string>
 #include <tesseract/baseapi.h>
+#include <thread>
 #include <vector>
 
 #include "Common/Rectangle2D.h"

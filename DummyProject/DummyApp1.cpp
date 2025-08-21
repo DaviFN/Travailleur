@@ -26,21 +26,15 @@ void DummyApp1::processFrame()
     ++counter;
     printf("on DummyApp1::processFrame (counter: %d)\n", counter);
 
-    const bool controlPressed = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    if (controlPressed) {
-        const bool hasPattern = hasImagePattern("imagePattern1", "rectangularRegion1");
-        printf("hasPattern: %d\n", (int)hasPattern);
-    }
+    const bool hasPattern = hasImagePattern("imagePattern1", "rectangularRegion1");
+    printf("hasPattern: %d\n", (int)hasPattern);
 
-    const bool shiftPressed = GetAsyncKeyState(VK_SHIFT) & 0x8000;
-    if (shiftPressed) {
-        const std::string ocrResult = performImageOcr("imageOCR1", "rectangularRegion2");
-        printf("ocrResult: %s\n", ocrResult.c_str());
-    }
+    const std::string ocrResult = performImageOcr("imageOCR1", "rectangularRegion2");
+    printf("ocrResult: %s\n", ocrResult.c_str());
 
-    if (!shiftPressed) {
-        showImageResource("imageResource1");
-    }
+    showImageResource("imageResource1");
+
+    std::this_thread::sleep_for(std::chrono::seconds(2));
 }
 
 void DummyApp1::showPreRunGui()

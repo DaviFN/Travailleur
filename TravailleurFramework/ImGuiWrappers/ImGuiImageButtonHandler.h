@@ -3,7 +3,7 @@
 
 #include <string>
 
-#include "Common\Image.h"
+#include "Common/Image.h"
 #include "gl3w.h"
 
 class ImGuiImageButtonHandler

@@ -1,6 +1,7 @@
 #include "gtest/gtest.h"
 
 #include <cstdio>
+#include <inttypes.h>
 
 #include "Core/ImagePattern.h"
 
@@ -279,7 +280,7 @@ TEST(ImagePatternOptimizationUnitTests, patternPixelsAccessUnitTest)
                 ++ll;
 
                 printf("howMuchToShift: %d\n", howMuchToShift);
-                printf("%d - (i,j) = (%d, %d) - %x, %x - %llx\n", ll, i, j, imageColorBitRepresentation, actualImageColorBitRepresentation, *currentSearchRegionQwordAddress);
+                printf("%d - (i,j) = (%d, %d) - %x, %x - %" PRIx64 "\n", ll, i, j, imageColorBitRepresentation, actualImageColorBitRepresentation, *currentSearchRegionQwordAddress);
                 printf("got: ");
                 printf(BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(imageColorBitRepresentation));
                 printf(" actual : ");

@@ -6,13 +6,13 @@
 
 void ImGuiTextOutput(const std::string& text)
 {
-    ImGui::Text(text.c_str());
+    ImGui::Text("%s", text.c_str());
 }
 
 void ImGuiTextOutput(const std::string& text, const Pixel color)
 {
     const ImVec4 imGuiColor = ImGuiUtils::pixelToImVec4(color);
     ImGui::PushStyleColor(ImGuiCol_Text, imGuiColor);
-    ImGui::Text(text.c_str());
+    ImGui::Text("%s", text.c_str());
     ImGui::PopStyleColor();
 }

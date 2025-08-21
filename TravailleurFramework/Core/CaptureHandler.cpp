@@ -1,16 +1,11 @@
 #include "CaptureHandler.h"
 
-#include "escapi.h"
 #include "imgui.h"
-
 #include "Common/FilesystemUtils.h"
 #include "Common/TravailleurUtils.h"
 #include "Common/StringUtils.h"
 #include "ImGuiWrappers/ImGuiTextOutput.h"
-#include "OpenCVUtils/OpenCVUtils.h"
 #include "TravailleurContext.h"
-
-bool CaptureHandler::escapiInitialized = false;
 
 CaptureHandler::CaptureHandler(TravailleurContext* travailleurContext):
     travailleurContext(travailleurContext),
@@ -21,12 +16,9 @@ CaptureHandler::CaptureHandler(TravailleurContext* travailleurContext):
 {
     setFrameToBlackFrame();
 
-    if (!escapiInitialized) {
-        setupESCAPI();
-        escapiInitialized = true;
-    }
-
     updateAvailableDevices();
+
+    desktopFrameGrabber = std::make_unique<DesktopFrameGrabber>();
 
     autoconnectOnStartup = std::make_unique<ImGuiCheckbox>("Autoconnect on startup", true, TravailleurUtils::getConfigFilenameFor("autoconnect-on-startup", travailleurContext->getName()));
 
@@ -70,8 +62,6 @@ CaptureHandler::~CaptureHandler()
     delete imGuiImageRenderer;
 
     delete frameOverlays;
-
-    delete escapiCaptureBuffer;
 }
 
 size_t CaptureHandler::captureWidth()
@@ -238,6 +228,20 @@ int CaptureHandler::selectedDeviceIndex() const
     return availableDevicesCombo.getSelectedIndex();
 }
 
+size_t CaptureHandler::countCaptureDevices()
+{
+    constexpr size_t maxTested = 10;
+    size_t count = 0;
+    for (size_t i = 0; i < maxTested; ++i) {
+        cv::VideoCapture cap(i, cv::CAP_ANY);
+        if (cap.isOpened()) {
+            ++count;
+            cap.release();
+        }
+    }
+    return count;
+}
+
 void CaptureHandler::updateAvailableDevices()
 {
     if (isConnectedToDevice()) {
@@ -270,6 +274,7 @@ void CaptureHandler::disconnectFromDevice()
 
 void CaptureHandler::update()
 {
+    desktopFrameGrabber->update();
     if (shouldGrabDesktop()) {
         grabDesktopFrame();
     }
@@ -903,7 +908,11 @@ bool CaptureHandler::shouldGrabDesktop() const
 
 void CaptureHandler::grabDesktopFrame()
 {
-    OpenCVUtils::grabDesktopFrame(*frame);
+    desktopFrameGrabber->grabDesktopFrame(*frame);
+
+    if (!frame->hasValidDimensions()) {
+        setFrameToBlackFrame();
+    }
 }
 
 bool CaptureHandler::screenshotHotkeyPressed() const

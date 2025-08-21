@@ -1,6 +1,5 @@
 #include "ImGuiImageButtonHandler.h"
 
-#include "escapi.h"
 #include "imgui.h"
 
 #include "ImGuiWrappers/ImGuiTextOutput.h"
@@ -44,7 +43,7 @@ void ImGuiImageButtonHandler::renderImageButton(
         ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.f, 0.f, 0.f, 0.f));
         ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.f, 0.f, 0.f, 0.f));
         
-        ImGui::ImageButton(id.c_str(), (void*)texture, ImVec2(image.getWidth(), image.getHeight()));
+        ImGui::ImageButton(id.c_str(), (ImTextureID)(uintptr_t)texture, ImVec2(image.getWidth(), image.getHeight()));
         if (ImGui::IsItemActive() && ImGui::IsItemHovered()) {
             wasPressed = true;
             positionPressed.x = (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x);
