@@ -179,6 +179,8 @@ Travailleur is a C++ automation framework that combines computer vision techniqu
       ```bash
       make open
       ```
+
+      > Obs: it may be needed to run Visual Studio / Visual Studio Code as admin
    4. Open the solution explorer window, if not open already (CTRL + ALT + L hotkey)
    5. Right-click the "INSTALL" project and select "build"; wait until the build process completes
    
